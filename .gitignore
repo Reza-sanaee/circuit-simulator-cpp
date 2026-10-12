@@ -1,0 +1,24 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+build/
+work/
+*.o
+*.obj
+*.exe
+*.dll
+*.wlf
+*.vcd
+*.aux
+*.log
+*.synctex.gz

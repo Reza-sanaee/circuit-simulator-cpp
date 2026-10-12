@@ -1,0 +1,67 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=22mm,headheight=16pt]{geometry}
+\usepackage{amsmath,amssymb,graphicx,array,longtable,booktabs}
+\usepackage{microtype,xcolor,hyperref,xurl,fancyhdr}
+\definecolor{Navy}{HTML}{17324D}
+\definecolor{Teal}{HTML}{087F8C}
+\definecolor{Gold}{HTML}{B88128}
+\hypersetup{colorlinks=true,linkcolor=Navy,urlcolor=Teal,bookmarksnumbered=true,hypertexnames=false}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlength{\emergencystretch}{4em}
+\setcounter{tocdepth}{1}
+\pagestyle{fancy}\fancyhf{}
+\fancyfoot[R]{\small\thepage}
+\fancyfoot[L]{\small\sffamily Sharif University of Technology}
+\renewcommand{\headrulewidth}{0.3pt}
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{\z@}{-3.2ex plus -1ex minus -.2ex}{1.6ex plus .2ex}{\normalfont\Large\sffamily\bfseries\color{Navy}}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}{-2.5ex plus -1ex minus -.2ex}{1.2ex plus .2ex}{\normalfont\large\sffamily\bfseries\color{Teal}}}
+\makeatother
+\fancyhead[L]{\small\sffamily\color{Navy}Reza Sanaee Nezhad}\fancyhead[R]{\small\sffamily\color{Teal}Technical Report}\begin{document}
+\begin{titlepage}\centering\vspace*{7mm}
+\includegraphics[width=31mm]{assets/sharif_emblem_en.png}\par\vspace{5mm}
+{\Large\sffamily\bfseries\color{Navy}SHARIF UNIVERSITY OF TECHNOLOGY\par}
+\vspace{2mm}{\sffamily Department of Electrical Engineering\par}
+\vspace{17mm}{\color{Teal}\rule{\linewidth}{1.4pt}}\par\vspace{6mm}
+{\large\sffamily\color{Teal}TECHNICAL REPORT\par}
+\vspace{8mm}{\huge\sffamily\bfseries\color{Navy}C++ Circuit Simulation Engine and SDL Interface\par}
+\vspace{9mm}{\color{Gold}\rule{45mm}{1pt}}\par\vfill
+\begin{minipage}{.88\linewidth}{\sffamily\color{Teal}AUTHOR}\par{\Large\sffamily Reza Sanaee Nezhad}\par Student ID: 401101502\par\vspace{7mm}\small Team collaborator: student ID 401101619\par\vspace{5mm}
+{\sffamily\color{Teal}INSTRUCTOR / INSTRUCTORS}\par
+Dr Hashemi; Dr Arasteh; Dr Shirali\par\vspace{7mm}
+{\sffamily\color{Teal}ACADEMIC CONTEXT}\par
+Object-Oriented Programming\par\end{minipage}\vfill
+\end{titlepage}
+\tableofcontents\clearpage
+Two implementation phases develop a SPICE-inspired C+\allowbreak{}+\allowbreak{} circuit simulator with polymorphic elements, numerical circuit analysis, command processing, and an SDL graphical interface. No separate phase-1/\allowbreak{}phase-2 narrative report is included, so this English report is reconstructed from the supplied source and assignments.
+
+\[ \begin{bmatrix}G&B\\C&D\end{bmatrix}\begin{bmatrix}v\\i\end{bmatrix}=\begin{bmatrix}j\\e\end{bmatrix}. \]
+\section{Evidence and implementation phases}
+
+The code package contains large main.cpp files for both phases and a phase-2 CMakeLists.txt plus interface assets/\allowbreak{}build material. No separate written report for either implementation phase was located. The present report therefore documents code-visible behavior;\allowbreak{} it is not a translation of an absent experiment log. Phase 1 is a team submission identified by student IDs 401101502 and 401101619;\allowbreak{} the second collaborator's name is not inferred from the ID. The class structure includes Element, Resistor, Capacitor, Inductor, Diode, independent current/\allowbreak{}voltage sources, ACVoltageSource, dependent VCVS/\allowbreak{}VCCS/\allowbreak{}CCVS/\allowbreak{}CCCS models, Node, Circuit, Simulator, and CircuitRenderer. Virtual element operations permit common circuit handling across component types.
+
+\section{Circuit representation and numerical analysis}
+
+Circuit stores nodes, elements, and analysis requests. The source assembles real/\allowbreak{}complex linear systems and uses elimination/\allowbreak{}back substitution routines. Modified nodal analysis introduces extra unknowns for voltage-source/\allowbreak{}inductor relations and stamps component equations into a shared matrix. A resistor between two non-ground nodes contributes conductance to both diagonals and its negative to the off-diagonal pair. DC, AC, and transient paths require different component models. Capacitor and inductor transient equivalents depend on timestep and prior state;\allowbreak{} AC uses frequency-dependent impedances. Nonlinear diode analysis needs an explicitly defined linearization and convergence test. Merely including a Diode class does not establish accurate nonlinear simulation under every bias condition. Pivoting, tolerances, singular-node detection, and clear error reporting are essential. Floating subcircuits, incompatible ideal-source constraints, and poorly conditioned matrices should be rejected or diagnosed. Results must also preserve requested variable order and units. The analysis routines are present;\allowbreak{} agreement with a reference SPICE suite has not been established by these demonstrations.
+
+\section{Command and result interfaces}
+
+Parsing supports circuit construction and simulation/\allowbreak{}output requests. Named structures for output variables, print requests, plottable expressions, and simulation results separate commands from produced data. This is useful for extending the program, although the largely single-file implementation makes responsibilities more difficult to isolate and test. A source-derived reproducibility report should explicitly distinguish supported commands from the assignment's complete feature wishlist. Optional network service and Cereal-based serialization remain extension requirements rather than demonstrated implementation features. Component classes for dependent sources are present, but their full numeric correctness remains unverified.
+
+\section{SDL interface and build}
+
+CircuitRenderer creates a resizable SDL window and accelerated renderer, handles events/\allowbreak{}text input, draws components and labels, and renders simulation plots. Plot areas use clipping and color-coded series;\allowbreak{} cursor-related code supports examining plotted results. SDL\_\allowbreak{}ttf handles font rendering. Browser-specific code is guarded by \_\allowbreak{}\_\allowbreak{}EMSCRIPTEN\_\allowbreak{}\_\allowbreak{}, so a native build should not need Emscripten headers merely because they appear in that conditional block. The phase-2 CMake file selects C+\allowbreak{}+\allowbreak{}20 and links MinGW/\allowbreak{}SDL2 libraries including SDL2main, SDL2\_\allowbreak{}image, SDL2\_\allowbreak{}ttf, and SDL2\_\allowbreak{}mixer. Reproduction requires compatible development libraries and runtime assets;\allowbreak{} the source alone does not imply that every host already has them installed. Hardcoded linker flags should be replaced with discovered/\allowbreak{}imported CMake targets for portability.
+
+\section{Detailed element responsibilities and matrix construction}
+
+Element is the polymorphic base for component identity, terminals, and component behavior. Resistor contributes conductance;\allowbreak{} capacitor/\allowbreak{}inductor need time-step state for transient analysis and frequency-dependent behavior for AC analysis. Independent voltage sources add branch-current unknowns and voltage constraints, while independent current sources contribute to the right-hand side. VCVS/\allowbreak{}VCCS models use controlling voltages;\allowbreak{} CCVS/\allowbreak{}CCCS need a defined controlling branch current. A diode requires nonlinear evaluation and linearization under a specified model. Merely creating the class is distinct from demonstrating converged accuracy. Node identifies electrical connectivity;\allowbreak{} ground removes one otherwise redundant reference degree of freedom. Circuit holds the components and requests, Simulator executes analysis, and CircuitRenderer maps the model/\allowbreak{}results to the SDL display. Phase 2 adds structured requested output variables and plottable expressions. Parsing, solver state, and display should agree on names, node signs, and units. Unknown components or malformed values require errors rather than silent defaults. For a resistor joining nodes a/\allowbreak{}b, G\_\allowbreak{}aa and G\_\allowbreak{}bb increase by 1/\allowbreak{}R and G\_\allowbreak{}ab/\allowbreak{}G\_\allowbreak{}ba decrease by 1/\allowbreak{}R where both nodes are non-ground. A voltage-source branch introduces incidence entries connecting its branch-current unknown to node KCL and a source-voltage constraint. Capacitor current is C*dv/\allowbreak{}dt;\allowbreak{} inductor voltage is L*di/\allowbreak{}dt. The chosen discretization determines their companion stamps and history terms. AC uses j*omega rather than a transient timestep. These equations explain the submitted MNA responsibilities without claiming reference-SPICE agreement.
+
+\section{Detailed command and interface responsibilities}
+
+The first phase covers textual construction and analysis. The second phase adds SDL event handling, component drawing, text input, and waveform visualization. Output-variable requests must preserve whether they refer to a node voltage, branch current, or expression. Plot axes need consistent physical units and time/\allowbreak{}frequency domains. Clipping prevents plotted lines from drawing outside the plot area, and distinct colors help compare traces. Fonts/\allowbreak{}images are runtime assets rather than numerical source files. The assignment includes optional serialization and network features, but the inspected implementation does not establish that they are complete.
+
+\end{document}
